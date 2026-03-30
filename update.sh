@@ -28,6 +28,7 @@ mkdir libdecor wayland wayland-protocols
 # install headers for libdecor
 git_clone_rev https://gitlab.freedesktop.org/libdecor/libdecor.git "$LIBDECOR_REV" _libdecor
 mv _libdecor/src/*.h libdecor
+cp _libdecor/LICENSE libdecor/
 
 
 git_clone_rev https://gitlab.freedesktop.org/wayland/wayland.git "$WAYLAND_REV" _wayland
@@ -43,9 +44,18 @@ sed \
     -e "s/@WAYLAND_VERSION_MINOR@/${parts[1]}/" \
     -e "s/@WAYLAND_VERSION_MICRO@/${parts[2]}/" \
     _wayland/src/wayland-version.h.in > wayland/wayland-version.h
+
+# build wayland-scanner from source (requires expat)
+python3 _wayland/src/embed.py _wayland/protocol/wayland.dtd wayland_dtd > _wayland/src/wayland.dtd.h
+cc -I _wayland/src -I _wayland/protocol -I wayland -o _wayland/wayland-scanner \
+    _wayland/src/scanner.c _wayland/src/wayland-util.c \
+    -lexpat
+WAYLAND_SCANNER=_wayland/wayland-scanner
+
 # generate main protocol headers
-wayland-scanner server-header _wayland/protocol/wayland.xml wayland/wayland-server-protocol.h
-wayland-scanner client-header _wayland/protocol/wayland.xml wayland/wayland-client-protocol.h
+"$WAYLAND_SCANNER" server-header _wayland/protocol/wayland.xml wayland/wayland-server-protocol.h
+"$WAYLAND_SCANNER" client-header _wayland/protocol/wayland.xml wayland/wayland-client-protocol.h
+cp _wayland/COPYING wayland/
 
 
 git_clone_rev https://gitlab.freedesktop.org/wayland/wayland-protocols.git "$WAYLAND_PROTOCOLS_REV" _wayland-protocols
@@ -55,8 +65,8 @@ generate_glfw() {
     xml=$1
     out_name=$2
 
-    wayland-scanner client-header "$xml" "wayland-protocols/wayland-$out_name-client-protocol.h"
-    wayland-scanner private-code "$xml" "wayland-protocols/wayland-$out_name-client-protocol-code.h"
+    "$WAYLAND_SCANNER" client-header "$xml" "wayland-protocols/wayland-$out_name-client-protocol.h"
+    "$WAYLAND_SCANNER" private-code "$xml" "wayland-protocols/wayland-$out_name-client-protocol-code.h"
 }
 
 # from https://github.com/glfw/glfw/blob/master/src/CMakeLists.txt#L95-L115
@@ -68,7 +78,8 @@ generate_glfw _wayland-protocols/unstable/pointer-constraints/pointer-constraint
 generate_glfw _wayland-protocols/unstable/idle-inhibit/idle-inhibit-unstable-v1.xml idle-inhibit-unstable-v1
 
 # for the main protocol the header has already been generated, so we only need the code
-wayland-scanner private-code _wayland/protocol/wayland.xml wayland-protocols/wayland-client-protocol-code.h
+"$WAYLAND_SCANNER" private-code _wayland/protocol/wayland.xml wayland-protocols/wayland-client-protocol-code.h
+cp _wayland-protocols/COPYING wayland-protocols/
 
 
 rm -rf _libdecor _wayland _wayland-protocols 
