@@ -20,7 +20,9 @@ It includes:
 
 ## Updating
 
-To update this repository, run `./update.sh` followed by `./verify.sh` to verify the repository contents.
+To regenerate the contents of this repository using the upstream version it currently targets, run `./generate.sh`.
+
+To update this repository to the latest upstream version, run `./update.sh` then `./generate.sh`.
 
 ## Verifying repository contents
 

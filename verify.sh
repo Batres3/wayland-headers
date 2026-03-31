@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-./update.sh
+./generate.sh
 git diff
