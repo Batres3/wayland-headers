@@ -65,21 +65,23 @@ generate_glfw() {
     xml=$1
     out_name=$2
 
-    "$WAYLAND_SCANNER" client-header "$xml" "wayland-protocols/wayland-$out_name-client-protocol.h"
-    "$WAYLAND_SCANNER" private-code "$xml" "wayland-protocols/wayland-$out_name-client-protocol-code.h"
+    "$WAYLAND_SCANNER" client-header "$xml" "wayland-protocols/$out_name-client-protocol.h"
+    "$WAYLAND_SCANNER" private-code "$xml" "wayland-protocols/$out_name-client-protocol-code.h"
 }
 
 # from https://github.com/glfw/glfw/blob/master/src/CMakeLists.txt#L95-L115
 generate_glfw _wayland-protocols/stable/xdg-shell/xdg-shell.xml xdg-shell
-generate_glfw _wayland-protocols/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml xdg-decoration
+generate_glfw _wayland-protocols/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml xdg-decoration-unstable-v1
 generate_glfw _wayland-protocols/stable/viewporter/viewporter.xml viewporter
 generate_glfw _wayland-protocols/unstable/relative-pointer/relative-pointer-unstable-v1.xml relative-pointer-unstable-v1
 generate_glfw _wayland-protocols/unstable/pointer-constraints/pointer-constraints-unstable-v1.xml pointer-constraints-unstable-v1
 generate_glfw _wayland-protocols/unstable/idle-inhibit/idle-inhibit-unstable-v1.xml idle-inhibit-unstable-v1
+generate_glfw _wayland-protocols/staging/fractional-scale/fractional-scale-v1.xml fractional-scale-v1
+generate_glfw _wayland-protocols/staging/xdg-activation/xdg-activation-v1.xml xdg-activation-v1
 
 # for the main protocol the header has already been generated, so we only need the code
 "$WAYLAND_SCANNER" private-code _wayland/protocol/wayland.xml wayland-protocols/wayland-client-protocol-code.h
 cp _wayland-protocols/COPYING wayland-protocols/
 
 
-rm -rf _libdecor _wayland _wayland-protocols 
+rm -rf _libdecor _wayland _wayland-protocols
